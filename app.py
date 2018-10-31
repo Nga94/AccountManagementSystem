@@ -14,16 +14,22 @@ app.config['JWT_SECRET_KEY'] = 'super-secret'  # Change this!
 jwt = JWTManager(app)
 
 
-# @app.route('/')
-# def index():
-#     return 'index'
-
 @app.route("/")
 def index():
     return render_template("index.html")
 
-@app.route('/login', methods=['POST'])
+
+@app.route("/bankacc")
+def abbankaccc():
+    return render_template("user.html")
+
+
+@app.route("/login")
 def login():
+    return render_template("login.html")
+
+@app.route('/login', methods=['POST'])
+def checklogin():
     # check if request has json data
     if not request.is_json:
         return jsonify({"msg": "Missing JSON data in request"}), 400
