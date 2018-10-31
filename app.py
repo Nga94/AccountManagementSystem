@@ -20,7 +20,7 @@ jwt = JWTManager(app)
 def index():
     return render_template("index.html")
 
-@app.route('/login', methods=['POST'])
+@app.route('/api/authenticate', methods=['POST'])
 def login():
     global mydb
     if request.method == 'GET':
