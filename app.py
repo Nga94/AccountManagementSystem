@@ -4,6 +4,7 @@ from flask_jwt_extended import (
     get_jwt_identity
 )
 from connectdb import mydb
+from account import Account
 import ast
 
 app = Flask(__name__)
@@ -22,10 +23,6 @@ def index():
 
 @app.route('/login', methods=['POST'])
 def login():
-    global mydb
-    if request.method == 'GET':
-        return render_template("static/partials/login.html")
-
     # check if request has json data
     if not request.is_json:
         return jsonify({"msg": "Missing JSON data in request"}), 400
@@ -50,11 +47,56 @@ def login():
     return jsonify(access_token=access_token), 200
 
 
-@app.route('/getuser')
+@app.route('/getall', methods=['GET', 'POST'])
 @jwt_required
-def profile():
-    current_user = get_jwt_identity()
-    return render_template("html/profile.html", name=current_user)
+def getall():
+
+    acctbl = mydb.accounts
+    accounts = acctbl.find()
+    rs = []
+    for i in accounts:
+        acc = Account(i["account_number"], i["firstname"], i["lastname"], i["age"], i["address"],
+                      i["gender"], i["email"], i["city"], i["employer"], i["state"], i["balance"])
+        rs.append(acc)
+    return jsonify({
+        "data": [x.tojson() for x in rs]
+    }), 200
+
+@app.route('/insert', methods=['POST'])
+@jwt_required
+def insert():
+    data = request.json.get("account")
+    acc = Account(data["account_number"], data["firstname"], data["lastname"], data["age"], data["address"],
+                      data["gender"], data["email"], data["city"], data["employer"], data["state"], data["balance"])
+    acctbl = mydb.accounts
+    result = acctbl.insert(acc.tojson())
+    if result:
+        return jsonify({"msg": "insert successfully"})
+    else:
+        return jsonify({"msg": "insert failed"})
+
+@app.route('/update/<id>', methods=['PUT'])
+@jwt_required
+def update(id):
+    data = request.json.get("account")
+    acc = Account(data["account_number"], data["firstname"], data["lastname"], data["age"], data["address"],
+                      data["gender"], data["email"], data["city"], data["employer"], data["state"], data["balance"])
+    acctbl = mydb.accounts
+    result = acctbl.update_one({"account_number": int(id)}, {"$set": acc.tojson()})
+    if result.matched_count == 1:
+        return jsonify({"msg": "update successfully"})
+    else:
+        return jsonify({"msg": "update failed"})
+
+@app.route("/delete/<id>", methods=["DELETE"])
+@jwt_required
+def delete(id):
+        acctbl = mydb.accounts
+        result = acctbl.delete_one({"account_number": int(id)})
+        if result.deleted_count == 1:
+            return jsonify({"msg": "delete successfully"}), 200
+        else:
+            return jsonify({"msg": "delete failed"}), 400
 
 
 
