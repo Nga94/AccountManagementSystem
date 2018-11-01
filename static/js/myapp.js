@@ -3,7 +3,7 @@ var myApp = angular.module("myApp", ["ngRoute"]);
 myApp.config(function ($routeProvider) {
     $routeProvider
       .when('/', {
-        templateUrl: 'login',
+        templateUrl: 'login'
       })
 	  .when('/accounts', {
         templateUrl: 'accounts',
