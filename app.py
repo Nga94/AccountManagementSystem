@@ -45,7 +45,7 @@ def checklogin():
     if not password:
         return jsonify({"msg": "Missing password in request"}), 400
     # get date in accounts with filter  
-    users = mydb['user']
+    users = mydb['users']
     user_curren = users.find({"username": username}, {"password": password})
     # check data return is empty
     if user_curren.count() == 0:
@@ -57,16 +57,21 @@ def checklogin():
 @app.route('/getall', methods=['GET', 'POST'])
 @jwt_required
 def getall():
-
+    # get tabl account
+    param = request.json
+    offset = param.get("from")
+    size = param.get("size")
     acctbl = mydb.accounts
-    accounts = acctbl.find()
+    totalrecord = acctbl.find().count()
+    accounts = acctbl.find().skip(offset).limit(size)
     rs = []
     for i in accounts:
         acc = Account(i["account_number"], i["firstname"], i["lastname"], i["age"], i["address"],
                       i["gender"], i["email"], i["city"], i["employer"], i["state"], i["balance"])
         rs.append(acc)
     return jsonify({
-        "data": [x.tojson() for x in rs]
+        "data": [x.tojson() for x in rs],
+        "recordsTotal": totalrecord
     }), 200
 
 @app.route('/insert', methods=['POST'])
@@ -104,6 +109,22 @@ def delete(id):
             return jsonify({"msg": "delete successfully"}), 200
         else:
             return jsonify({"msg": "delete failed"}), 400
+
+@app.route("/detail/<id>", methods=["GET"])
+@jwt_required
+def detail(id):
+    acctbl = mydb.accounts
+    accounts = acctbl.find({"account_number": int(id)})
+    rs = []
+    for i in accounts:
+        acc = Account(i["account_number"], i["firstname"], i["lastname"], i["age"], i["address"],
+                      i["gender"], i["email"], i["city"], i["employer"], i["state"], i["balance"])
+        rs.append(acc)
+    return jsonify({
+        "data": [x.tojson() for x in rs],
+        "size": len(rs),
+        "msg": "get data successed"
+    }), 200
 
 
 if __name__ == '__main__':

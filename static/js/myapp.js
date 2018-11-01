@@ -25,13 +25,13 @@ myApp.controller("loginController",
             method : "POST",
             url : "/checklogin",
             data: {'username': $scope.user.username,
-                    'password': $scope.user.password,
-                    }
+                   'password': $scope.user.password,
+            }
         })
         .then(function mySuccess(response) {
             token = response.data.access_token;
             sessionStorage.setItem('access_token', token);
-            $window.location.href = '#/bankacc';
+            $window.location.href = '#!bankacc';
         })
         .catch(function myError(response) {
             $scope.msg = response.data.msg;
@@ -42,15 +42,17 @@ myApp.controller("loginController",
 
   myApp.controller("accountController",
     function ($scope, $http) {
+      var token = sessionStorage.getItem("access_token");
+      var t = token != null ? "Bearer " + sessionStorage.getItem("access_token") : "";
       $scope.hasError = false;
       $scope.accounts = {};
-      console.log('nga')
       $http({
         method : "GET",
-        url : "/getall"
+        url : "/getall",
+        headers: {"Authorization": t}
       }).then(function mySuccess(response) {
-        console.log(response.data);
-        $scope.accounts = response.data.records;
+        $scope.accounts = response.data;
+        console.log($scope.accounts);
       }, function myError(response) {
         $scope.hasError = true;
       });
