@@ -5,8 +5,11 @@ from flask_jwt_extended import (
 )
 from connectdb import mydb
 import ast
+from flask_cors import CORS
 
 app = Flask(__name__)
+#allow request from client
+cors = CORS(app, resources={r"/api/*": {"origins": "*"}})
 
 # Setup the Flask-JWT-Extended extension
 app.config['JWT_SECRET_KEY'] = 'super-secret'  # Change this!
@@ -16,16 +19,10 @@ jwt = JWTManager(app)
 # @app.route('/')
 # def index():
 #     return 'index'
-@app.route("/")
-def index():
-    return render_template("index.html")
 
-@app.route('/login', methods=['POST'])
+@app.route('/api/authenticate', methods=['POST'])
 def login():
     global mydb
-    if request.method == 'GET':
-        return render_template("static/partials/login.html")
-
     # check if request has json data
     if not request.is_json:
         return jsonify({"msg": "Missing JSON data in request"}), 400
@@ -50,12 +47,11 @@ def login():
     return jsonify(access_token=access_token), 200
 
 
-@app.route('/getuser')
+@app.route('/api/getuser')
 @jwt_required
 def profile():
     current_user = get_jwt_identity()
-    return render_template("html/profile.html", name=current_user)
-
+    return jsonify(name=current_user), 200
 
 
 if __name__ == '__main__':

@@ -10,23 +10,25 @@
 
         service.Login = Login;
         service.Logout = Logout;
+        service.getUser = getUser;
 
         return service;
 
         function Login(username, password, callback) {
+            var data = JSON.stringify({ username: username, password: password });
             $http({
                 url: 'http://127.0.0.1:5000/api/authenticate',
                 method: "POST",
-                data: { username: username, password: password },
-                headers: {'Content-Type': 'application/x-www-form-urlencoded'}
+                data: data,
+                headers: {'Content-Type': 'application/json'}
             }).then(function (response) {
                     // login successful if there's a token in the response
-                    if (response.token) {
+                    if (response.status === 200) {
                         // store username and token in local storage to keep user logged in between page refreshes
-                        $localStorage.currentUser = { username: username, token: response.token };
+                        $localStorage.currentUser = { username: username, token: response.data.access_token };
 
                         // add jwt token to auth header for all requests made by the $http service
-                        $http.defaults.headers.common.Authorization = 'Bearer ' + response.token;
+                        $http.defaults.headers.common.Authorization = 'Bearer ' + response.data.access_token;
 
                         // execute callback with true to indicate successful login
                         callback(true);
@@ -34,7 +36,20 @@
                         // execute callback with false to indicate failed login
                         callback(false);
                     }
-                });
+            }).catch(function(e) {
+                callback(false);
+            });
+        }
+
+        function getUser(callback) {
+            $http ({
+                method : "GET",
+                url : "http://127.0.0.1:5000/api/getuser",
+            }).then(function mySuccess(response) {
+                callback(true, response);
+            }, function myError(response) {
+                callback(false, response);
+            });
         }
 
         function Logout() {
