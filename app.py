@@ -21,14 +21,14 @@ def index():
 
 @app.route("/bankacc")
 def abbankaccc():
-    return render_template("user.html")
+    return render_template("bankacc.html")
 
 
 @app.route("/login")
 def login():
     return render_template("login.html")
 
-@app.route('/login', methods=['POST'])
+@app.route('/checklogin', methods=['POST'])
 def checklogin():
     # check if request has json data
     if not request.is_json:
@@ -45,10 +45,10 @@ def checklogin():
     if not password:
         return jsonify({"msg": "Missing password in request"}), 400
     # get date in accounts with filter  
-    accounts = mydb['accounts']
-    usercurren = accounts.find({"firstname": username})
+    users = mydb['user']
+    user_curren = users.find({"username": username}, {"password": password})
     # check data return is empty
-    if usercurren.count() == 0:
+    if user_curren.count() == 0:
         return jsonify({"msg": "Username or password is incorrect"}), 400
     access_token = create_access_token(identity=username)
     return jsonify(access_token=access_token), 200
