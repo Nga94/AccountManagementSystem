@@ -4,7 +4,6 @@ from flask_jwt_extended import (
     get_jwt_identity
 )
 from connectdb import mydb
-from account import Account
 import ast
 
 app = Flask(__name__)
@@ -27,6 +26,20 @@ def abbankaccc():
 @app.route("/login")
 def login():
     return render_template("login.html")
+
+def tojsonAccount(account):
+    return {'account_number': account["account_number"], 
+            'firstname' : account["firstname"], 
+            'lastname' : account["lastname"],
+            'age' : account["lastname"], 
+            'address' : account["address"],
+            'gender' : account["gender"],
+            'email' : account["email"],
+            'city' : account["city"], 
+            'employer' : account["employer"], 
+            'state' : account["state"], 
+            'balance' : account["balance"]
+        }
 
 @app.route('/checklogin', methods=['POST'])
 def checklogin():
@@ -57,7 +70,6 @@ def checklogin():
 @app.route('/getall', methods=['GET', 'POST'])
 @jwt_required
 def getall():
-    # get tabl account
     param = request.json
     offset = param.get("from")
     size = param.get("size")
@@ -65,23 +77,22 @@ def getall():
     totalrecord = acctbl.find().count()
     accounts = acctbl.find().skip(offset).limit(size)
     rs = []
+    #import pdb
     for i in accounts:
-        acc = Account(i["account_number"], i["firstname"], i["lastname"], i["age"], i["address"],
-                      i["gender"], i["email"], i["city"], i["employer"], i["state"], i["balance"])
+        # pdb.set_trace()
+        acc = tojsonAccount(i)
         rs.append(acc)
     return jsonify({
-        "data": [x.tojson() for x in rs],
-        "recordsTotal": totalrecord
+        "data": [ x for x in rs],
+        "recordsTotal": totalrecord,
     }), 200
 
 @app.route('/insert', methods=['POST'])
 @jwt_required
 def insert():
     data = request.json.get("account")
-    acc = Account(data["account_number"], data["firstname"], data["lastname"], data["age"], data["address"],
-                      data["gender"], data["email"], data["city"], data["employer"], data["state"], data["balance"])
     acctbl = mydb.accounts
-    result = acctbl.insert(acc.tojson())
+    result = acctbl.insert(tojsonAccount(data))
     if result:
         return jsonify({"msg": "insert successfully"})
     else:
@@ -91,10 +102,8 @@ def insert():
 @jwt_required
 def update(id):
     data = request.json.get("account")
-    acc = Account(data["account_number"], data["firstname"], data["lastname"], data["age"], data["address"],
-                      data["gender"], data["email"], data["city"], data["employer"], data["state"], data["balance"])
     acctbl = mydb.accounts
-    result = acctbl.update_one({"account_number": int(id)}, {"$set": acc.tojson()})
+    result = acctbl.update_one({"account_number": int(id)}, {"$set": tojsonAccount(data)})
     if result.matched_count == 1:
         return jsonify({"msg": "update successfully"})
     else:
@@ -117,11 +126,10 @@ def detail(id):
     accounts = acctbl.find({"account_number": int(id)})
     rs = []
     for i in accounts:
-        acc = Account(i["account_number"], i["firstname"], i["lastname"], i["age"], i["address"],
-                      i["gender"], i["email"], i["city"], i["employer"], i["state"], i["balance"])
+        acc = tojsonAccount(i)
         rs.append(acc)
     return jsonify({
-        "data": [x.tojson() for x in rs],
+        "data": [x for x in rs],
         "size": len(rs),
         "msg": "get data successed"
     }), 200
