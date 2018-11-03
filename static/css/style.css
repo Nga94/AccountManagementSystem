@@ -4,3 +4,19 @@ input.ng-dirty.ng-invalid{
 a{
     cursor: pointer;
 }
+.title {
+    height: 50px;
+    width: 100%;
+    text-align: center;
+    margin-top: 10px;
+    margin-bottom: 10px;
+    background-color: #f9f9f9;
+    font-size: 30px;
+}
+.btnadd {
+    float: right;
+    margin-right: 10px;
+}
+.modal-header {
+    background-color: #428bca;
+}

@@ -48,7 +48,7 @@ myApp.controller("loginController",
         $scope.alertError = true;
         $scope.hasAlert = false;
         $scope.info = {};
-        $scope.accounts = {};
+        $scope.account = {};
         $scope.query = {};
         $scope.rs = {};
         // Store datatable instance
@@ -187,7 +187,7 @@ myApp.controller("loginController",
         DTColumnBuilder.newColumn('state').renderWith(stateRender).withClass("text-center").withTitle('State').notSortable(),
         DTColumnBuilder.newColumn('employer').renderWith(employerRender).withClass("text-center").withTitle('Employer').notSortable(),
         DTColumnBuilder.newColumn('balance').renderWith(balanceRender).withClass("text-right").withTitle('Balance'),
-        DTColumnBuilder.newColumn("action").renderWith(actionRender).withClass("text-center").withTitle('Action').withOption('width', '150px').notSortable(),
+        DTColumnBuilder.newColumn("action").renderWith(actionRender).withClass("text-center").withTitle('Action').withOption('width', '200px').notSortable(),
     ];
 
     //confirm delete
@@ -219,8 +219,108 @@ myApp.controller("loginController",
                 $scope.msg = "An error occur : " + error.data.msg;
                 $scope.hasAlert = true;
                 $scope.alertError = true;
-                $('#addpopup').modal('hide');
+                $('#modal-create').modal('hide');
             }
         });
     }
+
+    //click add new button
+    $scope.add = function () {
+        $scope.account = {gender: 'F'};
+        $scope.showAdd = true;
+        $('#modal-create').modal({backdrop: 'static', keyboard: false});
+    }
+
+    //click edit button
+    $scope.edit = function (id) {
+        $scope.info.id = id;
+        $scope.showAdd = false;
+        $http({
+            method: 'GET',
+            url: '/detail/' + $scope.info.id,
+            headers: {
+                "Authorization": t
+            }
+        }).then(function (response) {
+            $scope.account = response.data.data[0];
+            $('#modal-create').modal({backdrop: 'static', keyboard: false});
+        }, function (error) {
+            if (error.status == 401) {
+                alert("Session expired!")
+                sessionStorage.removeItem("access_token");
+                $window.location.href = '#/login';
+            } else if (error.status == 400) {
+                $scope.msg = "An error occur : " + error.data.msg;
+                $scope.hasAlert = true;
+                $scope.alertType = true;
+                $('#modal-create').modal('hide');
+            }
+        });
+    }
+
+    //submit form
+        $scope.submitForm = function (isvalid) {
+            //check form issvalid
+            if (isvalid) {
+                //check update or insert
+                if ($scope.showAdd) {
+                    //insert
+                    $http({
+                        method: 'POST',
+                        url: '/insert',
+                        data: {account: $scope.account},
+                        headers: {
+                            "Authorization": "Bearer " + sessionStorage.getItem("access_token")
+                        }
+                    }).then(function (response) {
+                        $scope.msg = response.data.msg;
+                        $scope.alertError = false;
+                        $scope.hasAlert = true;
+                        $('#modal-create').modal('hide');
+                        $scope.reloadData();
+                    }, function (error) {
+                        if (error.status == 401) {
+                            alert("Session expired!")
+                            sessionStorage.removeItem("access_token");
+                            $window.location.href = '#/login';
+                        } else if (error.status == 400) {
+                            $scope.msg = "An error occur : " + error.data.msg;
+                            $scope.hasAlert = true;
+                            $scope.alertError = true;
+                            $('#modal-create').modal('hide');
+                        }
+                    })
+                } else {
+                    //update
+                    $http({
+                        method: 'PUT',
+                        url: '/update/' + $scope.info.id,
+                        data: {account: $scope.account},
+                        headers: {
+                            "Authorization": t
+                        }
+                    }).then(function (response) {
+                        $scope.msg = response.data.msg;
+                        $scope.alertError = false;
+                        $scope.hasAlert = true;
+                        $('#modal-create').modal('hide');
+                        $scope.reloadData();
+                    }, function (error) {
+                        if (error.status == 401) {
+                            alert("Session expired!")
+                            sessionStorage.removeItem("access_token");
+                            $window.location.href = '#/login';
+                        } else if (error.status == 400) {
+                            $scope.msg = "An error occur : " + error.data.msg;
+                            $scope.hasAlert = true;
+                            $scope.alertError = true;
+                            $('#modal-create').modal('hide');
+                        }
+                    })
+                }
+            } else {
+                alert("Invalid")
+            }
+        }
+
   })

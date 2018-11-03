@@ -4,7 +4,7 @@ from flask_jwt_extended import (
     get_jwt_identity
 )
 from connectdb import mydb
-import ast
+from functools import wraps
 
 app = Flask(__name__)
 
@@ -31,7 +31,7 @@ def tojsonAccount(account):
     return {'account_number': account["account_number"], 
             'firstname' : account["firstname"], 
             'lastname' : account["lastname"],
-            'age' : account["lastname"], 
+            'age' : account["age"],
             'address' : account["address"],
             'gender' : account["gender"],
             'email' : account["email"],
@@ -40,6 +40,21 @@ def tojsonAccount(account):
             'state' : account["state"], 
             'balance' : account["balance"]
         }
+
+# check if user send request is admin
+def checkadmin(f):
+    @wraps(f)
+    def wrapper(*args, **kwargs):
+        userTbl = mydb.user
+        cur_user = get_jwt_identity()
+        usercur = userTbl.find({"username": cur_user})
+        if usercur.count() > 0:
+            for u in usercur:
+                if u["role"] == 0:
+                    return jsonify({"msg": "just admin can perform this action"}), 400
+        return f(*args, **kwargs)
+
+    return wrapper
 
 @app.route('/checklogin', methods=['POST'])
 def checklogin():
@@ -89,6 +104,7 @@ def getall():
 
 @app.route('/insert', methods=['POST'])
 @jwt_required
+@checkadmin
 def insert():
     data = request.json.get("account")
     acctbl = mydb.accounts
@@ -100,6 +116,7 @@ def insert():
 
 @app.route('/update/<id>', methods=['PUT'])
 @jwt_required
+@checkadmin
 def update(id):
     data = request.json.get("account")
     acctbl = mydb.accounts
@@ -111,6 +128,7 @@ def update(id):
 
 @app.route("/delete/<id>", methods=["DELETE"])
 @jwt_required
+@checkadmin
 def delete(id):
         acctbl = mydb.accounts
         result = acctbl.delete_one({"account_number": int(id)})

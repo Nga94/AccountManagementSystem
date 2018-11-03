@@ -1,38 +1,150 @@
 <div class="row">
-    <div class="col-md-12">
-        <div ng-show="hasAlert">
-            <div class="alert alert-danger" ng-show="alertError">
-                <strong>{{ '{{msg}}' }}</strong>
-            </div>
-            <div class="alert alert-success"  ng-show="!alertType">
-                <strong>{{ '{{msg}}' }}</strong>
-            </div>
+    <div class="title">
+        <span>Account management</span>
+    </div>
+</div>
+<div class="row">
+    <a class="btn btn-primary btnadd" ng-click="add()">Create account</a>
+    <div ng-show="hasAlert">
+        <div class="alert alert-danger text-center" ng-show="alertError">
+            <strong>{{ '{{msg}}' }}</strong>
         </div>
-        <table datatable="" dt-options="dtOptions" dt-columns="dtColumns" dt-instance="dtInstance"
-                class="table table-striped table-bordered table-hover table-condensed" role="grid"></table>
-        <!-- confirm delete pop up-->
-        <div class="modal fade" id="modal-delete">
-            <div class="modal-dialog">
-                <div class="modal-content">
+        <div class="alert alert-success text-center"  ng-show="!alertError">
+            <strong>{{ '{{msg}}' }}</strong>
+        </div>
+    </div>
+    <table datatable="" dt-options="dtOptions" dt-columns="dtColumns" dt-instance="dtInstance"
+            class="table table-striped table-bordered table-hover table-condensed" role="grid"></table>
+    <!-- add popup -->
+    <div class="modal " id="modal-create" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel">
+        <div class="modal-dialog" role="document"  style="width: 70%">
+            <div class="modal-content">
                 <div class="modal-header">
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                    </button>
-                    <h4 class="modal-title">
-                        <i class="fa fa-trash-o"></i>
-                        Delet confirm
-                    </h4>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title" id="exampleModalLabel" ><i class="fa fa-user"></i> Bank Account Detail</h4>
                 </div>
-                <div class="modal-body">
-                    Are you sure you want to delete?
-                </div>
-                <div class="modal-footer">
-                    <button type="button"  ng-click="deleteAccount()"  class="btn btn-primary">OK</button>
-                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-                </div>
-                </div>
+                <form name="form" ng-submit="submitForm(form.$valid)" class="form-horizontal">
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <label class="control-label col-md-2" for="txtaccnum">Account number:</label>
+                            <div class="col-md-10">
+                                <input type="number" class="form-control" name="accnum" ng-model="account.account_number" id="txtaccnum" required>
+                                <span class="text-danger" ng-show="(form.accnum.$dirty || form.$submitted) && form.accnum.$error.required">Account Number is required</span>
+                                <span class="text-danger" ng-show="(form.accnum.$dirty || form.$submitted) && form.accnum.$error.number">Account Number only number positive</span>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label col-md-2" for="txtFirstname">Firstname:</label>
+                            <div class="col-md-10">
+                                <input type="text" class="form-control" name="firstname" ng-model="account.firstname" id="txtFirstname" required>
+                                <span class="text-danger" ng-show="(form.firstname.$dirty || form.$submitted) && form.firstname.$error.required">Firstname is required</span>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label col-md-2" for="txtLastname">Lastname:</label>
+                            <div class="col-md-10">
+                                <input type="text" class="form-control" name="lastname" ng-model="account.lastname" id="txtLastname" required>
+                                <span class="text-danger" ng-show="(form.lastname.$dirty || form.$submitted) && form.lastname.$error.required">Lastname is required</span>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="control-label col-md-2" for="txtAge">Age:</label>
+                            <div class="col-md-10">
+                                <input type="number" class="form-control" name="age" ng-model="account.age" id="txtAge" ng-pattern="regexNum" required>
+                                <span class="text-danger" ng-show="(form.age.$dirty || form.$submitted) && form.age.$error.required">Age is required</span>
+                                <span class="text-danger" ng-show="(form.age.$dirty || form.$submitted) && form.age.$error.number">Age only number positive</span>
+                            </div>
+
+                        </div>
+
+                        <div class="form-group">
+                             <label class="control-label col-md-2">Gender:</label>
+                             <div class="col-md-10">
+                                 <label class="radio-inline"><input type="radio" ng-model="account.gender" value="F">Female</label>
+                                 <label class="radio-inline"><input type="radio" ng-model="account.gender" value="M">Male</label>
+                             </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="control-label col-md-2" for="txtAddress">Address:</label>
+                            <div class="col-md-10">
+                                <input type="text" class="form-control" name="address" ng-model="account.address" id="txtAddress" required>
+                                <span class="text-danger" ng-show="(form.address.$dirty || form.$submitted) && form.address.$error.required">Address is required</span>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="control-label col-md-2" for="txtCity">City:</label>
+                            <div class="col-md-10">
+                                <input type="text" class="form-control" name="city" ng-model="account.city" id="txtCity" required>
+                                <span class="text-danger" ng-show="(form.city.$dirty || form.$submitted) && form.city.$error.required">City is required</span>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="control-label col-md-2" for="txtEmail">Email:</label>
+                            <div class="col-md-10">
+                                <input type="email" class="form-control" name="email" ng-model="account.email" id="txtEmail" ng-pattern="regexEmail" required>
+                                <span class="text-danger" ng-show="(form.email.$dirty || form.$submitted) && form.email.$error.required">Email is required</span>
+                                <span class="text-danger" ng-show="(form.email.$dirty || form.$submitted) && form.email.$error.email">Email wrong formatted</span>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="control-label col-md-2" for="txtState">State:</label>
+                            <div class="col-md-10">
+                                <input type="text" class="form-control" name="state" ng-model="account.state" id="txtState" required>
+                                <span class="text-danger" ng-show="(form.state.$dirty || form.$submitted) && form.state.$error.required">State is required</span>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label col-md-2" for="txtEmployer">Employer:</label>
+                            <div class="col-md-10">
+                                <input type="text" class="form-control" name="employer" ng-model="account.employer" id="txtEmployer" required>
+                                <span class="text-danger" ng-show="(form.employer.$dirty || form.$submitted) && form.employer.$error.required">Employer is required</span>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label col-md-2" for="txtBalance">Balance:</label>
+                            <div class="col-md-10">
+                                <input type="number" class="form-control" name="balance" ng-model="account.balance" id="txtBalance" ng-pattern="regexNumPlus" required>
+                                <span class="text-danger" ng-show="(form.balance.$dirty || form.$submitted) && form.balance.$error.required">Balance is required</span>
+                                <span class="text-danger" ng-show="(form.balance.$dirty || form.$submitted) && form.balance.$error.number">Balance only number</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button"  class="btn btn-default" data-dismiss="modal">Close</button>
+                        <button id="btnSave"  type="submit" ng-disabled="form.$invalid" class="btn btn-primary">Save</button>
+                    </div>
+                </form>
             </div>
         </div>
-        <!-- end delete pop up -->
-    </div>  
+    </div>
+    <!-- end add popup -->
+    <!-- confirm delete popup-->
+    <div class="modal fade" id="modal-delete">
+        <div class="modal-dialog">
+            <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+                </button>
+                <h4 class="modal-title">
+                    <i class="fa fa-trash-o"></i>
+                    Delete confirm
+                </h4>
+            </div>
+            <div class="modal-body">
+                Are you sure you want to delete?
+            </div>
+            <div class="modal-footer">
+                <button type="button"  ng-click="deleteAccount()"  class="btn btn-primary">OK</button>
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+            </div>
+            </div>
+        </div>
+    </div>
+    <!-- end delete popup -->
 </div>
