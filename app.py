@@ -90,16 +90,31 @@ def getall():
     size = param.get("size")
     acctbl = mydb.accounts
     totalrecord = acctbl.find().count()
-    accounts = acctbl.find().skip(offset).limit(size)
+    columns = ["account_number", "firstname", "lastname", "gender", "age", "email", "address", "city", "state",
+               "employer", "balance"]
+    _filter = {}
+    if param.get("search") != "":
+        # the term put into search is logically concatenated with 'or' between all columns
+        or_filter_on_all_columns = []
+
+        for i in range(len(columns)):
+            column_filter = {}
+            # case insensitive partial string matching pulled from user input
+            column_filter[columns[i]] = {'$regex': param.get("search"), '$options': 'i'}
+            or_filter_on_all_columns.append(column_filter)
+
+        _filter['$or'] = or_filter_on_all_columns
+    accounts = acctbl.find(_filter).skip(offset).limit(size)
+    recordsFiltered = acctbl.find(_filter).count()
     rs = []
-    #import pdb
     for i in accounts:
-        # pdb.set_trace()
         acc = tojsonAccount(i)
         rs.append(acc)
     return jsonify({
         "data": [ x for x in rs],
         "recordsTotal": totalrecord,
+        "recordsFiltered": recordsFiltered,
+
     }), 200
 
 @app.route('/insert', methods=['POST'])
