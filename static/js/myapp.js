@@ -92,11 +92,8 @@ myApp.controller("loginController",
           'ajax', {
             url: '/getall',
             type: 'POST',
-            // Content type
             contentType: 'application/json',
-            // Type of data to send to server
             dataType: 'json',
-            // Attach cookie with headers
             xhrFields: {
                 withCredentials: true
             },
@@ -110,7 +107,6 @@ myApp.controller("loginController",
                     $window.location.href = '#/login';
                 }
             },
-            // Make request, modify request data here
             data: function (data) {
                 $scope.draw = data.draw;
                 $scope.query.from = data.start;
@@ -187,7 +183,7 @@ myApp.controller("loginController",
         DTColumnBuilder.newColumn('state').renderWith(stateRender).withClass("text-center").withTitle('State').notSortable(),
         DTColumnBuilder.newColumn('employer').renderWith(employerRender).withClass("text-center").withTitle('Employer').notSortable(),
         DTColumnBuilder.newColumn('balance').renderWith(balanceRender).withClass("text-right").withTitle('Balance'),
-        DTColumnBuilder.newColumn("action").renderWith(actionRender).withClass("text-center").withTitle('Action').withOption('width', '200px').notSortable(),
+        DTColumnBuilder.newColumn("action").renderWith(actionRender).withClass("text-center").withTitle('Action').withOption('width', '150px').notSortable()
     ];
 
     //confirm delete
