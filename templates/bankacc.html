@@ -9,7 +9,7 @@
         </div>
     </div>
 </div>
-<div class="row">
+<div class="row" ng-show="isAdmin">
     <div class="col-md-12 col-lg-12">
         <a class="btn btn-primary btn-add" ng-click="add()">Create account</a>
     </div>
@@ -69,7 +69,6 @@
                                 <span class="text-danger" ng-show="(form.age.$dirty || form.$submitted) && form.age.$error.required">Age is required</span>
                                 <span class="text-danger" ng-show="(form.age.$dirty || form.$submitted) && form.age.$error.number">Age only number positive</span>
                             </div>
-
                         </div>
 
                         <div class="form-group">
@@ -79,6 +78,7 @@
                                  <label class="radio-inline"><input type="radio" ng-model="account.gender" value="M">Male</label>
                              </div>
                         </div>
+
                         <div class="divider">
                             <span class="title-divider">Contact Info</span>
                         </div>
@@ -137,7 +137,7 @@
                     </div>
                     <div class="modal-footer">
                         <button type="button"  class="btn btn-default" data-dismiss="modal">Close</button>
-                        <button id="btnSave"  type="submit" ng-disabled="form.$invalid" class="btn btn-primary">Save</button>
+                        <button id="btnSave"  type="submit" ng-disabled="form.$invalid" class="btn btn-primary" ng-show="isAdmin">Save</button>
                     </div>
                 </form>
             </div>

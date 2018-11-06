@@ -1,4 +1,5 @@
 var myApp = angular.module("myApp", ["datatables", "ngRoute",'toaster']);
+var isAdmin = false;
 
 myApp.config(function ($routeProvider) {
     $routeProvider
@@ -32,6 +33,8 @@ myApp.controller("loginController",
         .then(function mySuccess(response) {
             token = response.data.access_token;
             sessionStorage.setItem('access_token', token);
+            isAdmin = response.data.isAdmin;
+            console.log(isAdmin);
             $window.location.href = '#!bankacc';
         })
         .catch(function myError(response) {
@@ -52,8 +55,8 @@ myApp.controller("loginController",
         $scope.account = {};
         $scope.query = {};
         $scope.rs = {};
-
         $scope.userLogin = {};
+        $scope.isAdmin = isAdmin;
         // Store datatable instance
         $scope.dtInstance = {};
         $scope.reloadData = reloadData;
@@ -149,8 +152,13 @@ myApp.controller("loginController",
             $compile(angular.element('#' + settings.sTableId).contents())($scope);
         });
     function actionRender(data, type, row) {
-        return `<button class="btn btn-icon btn-sm btn-warning" ng-click="edit('${row.account_number}')" ><i class="fa fa-edit"></i></button>
-                <button class="btn btn-icon btn-sm btn-danger" ng-click="deleteConfirm('${row.account_number}')" ><i class="fa fa-trash-o"></i></button>`;
+        if (isAdmin) {
+            return `<button class="btn btn-icon btn-sm btn-warning" ng-click="edit('${row.account_number}')" ><i class="fa fa-edit"></i></button>
+                <button class="btn btn-icon btn-sm btn-danger" ng-click="deleteConfirm('${row.account_number}')"><i class="fa fa-trash-o"></i></button>`;
+        } else {
+            return `<button class="btn btn-icon btn-sm btn-defalut" ng-click="edit('${row.account_number}')" ><i class="fa fa-info"></i></button>`;
+        }
+        
     }
 
     var indexRender = function indexRender(data, type, full, meta) {
@@ -301,10 +309,12 @@ myApp.controller("loginController",
                             "Authorization": t
                         }
                     }).then(function (response) {
+                        console.log(response)
                         toaster.pop('success', "200", "Update account success!");
                         $('#modal-create').modal('hide');
                         $scope.reloadData();
                     }, function (error) {
+                        console.log(error)
                         if (error.status == 401) {
                             alert("Session expired!")
                             sessionStorage.removeItem("access_token");

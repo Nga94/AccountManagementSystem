@@ -1,10 +1,11 @@
 from flask import Flask, url_for, render_template, request, jsonify
 from flask_jwt_extended import (
     JWTManager, jwt_required, create_access_token,
-    get_jwt_identity
+    get_jwt_identity, get_raw_jwt
 )
 from connectdb import mydb
 from functools import wraps
+import base64
 
 app = Flask(__name__)
 
@@ -14,6 +15,8 @@ app.config['JWT_BLACKLIST_ENABLED'] = True
 app.config['JWT_BLACKLIST_TOKEN_CHECKS'] = ['access', 'refresh']
 jwt = JWTManager(app)
 blacklist = set()
+
+isAdmin = True
 
 @jwt.token_in_blacklist_loader
 def check_if_token_in_blacklist(decrypted_token):
@@ -56,7 +59,7 @@ def checkadmin(f):
         cur_user = get_jwt_identity()
         usercur = userTbl.find_one({"username": cur_user})
         if usercur:
-            if u["role"] == 0:
+            if usercur["role"] == 0:
                 return jsonify({"msg": "just admin can perform this action"}), 400
         return f(*args, **kwargs)
 
@@ -64,6 +67,7 @@ def checkadmin(f):
 
 @app.route('/checklogin', methods=['POST'])
 def checklogin():
+    global isAdmin
     # check if request has json data
     if not request.is_json:
         return jsonify({"msg": "Missing JSON data in request"}), 400
@@ -71,7 +75,7 @@ def checklogin():
     username = request.json.get("username")
     # get password from request
     password = request.json.get("password")
-
+    password = base64.b64encode(password)
     # check username is empty
     if not username:
         return jsonify({"msg": "Missing username in request"}), 400
@@ -79,14 +83,17 @@ def checklogin():
     if not password:
         return jsonify({"msg": "Missing password in request"}), 400
     # get date in accounts with filter  
-    users = mydb['users']
-    user_curren = users.find({"username": username}, {"password": password})
-    # check data return is empty
-    if user_curren.count() == 0:
-        return jsonify({"msg": "Username or password is incorrect"}), 400
-    access_token = create_access_token(identity=username)
-    return jsonify(access_token=access_token), 200
+    userTbl = mydb.users
+    user_curren = userTbl.find_one({"username": username, "password": password})
 
+    # check data return is empty
+    if user_curren:
+        if user_curren["role"] == "0":
+            isAdmin = False
+        access_token = create_access_token(identity=username)
+        return jsonify({"isAdmin": isAdmin,"access_token": access_token}), 200  
+    else:
+        return jsonify({"msg": "Username or password is incorrect"}), 400
 
 @app.route('/getall', methods=['GET', 'POST'])
 @jwt_required
@@ -118,18 +125,22 @@ def getall():
     return jsonify({
         "data": [ x for x in rs],
         "recordsTotal": totalrecord,
-        "recordsFiltered": recordsFiltered,
-
+        "recordsFiltered": recordsFiltered
     }), 200
 
 @app.route('/insert', methods=['POST'])
 @jwt_required
 @checkadmin
 def insert():
+    
     data = request.json.get("account")
     acctbl = mydb.accounts
     result = acctbl.insert(tojsonAccount(data))
-    return jsonify({"msg": "insert successfully"})
+    
+    if result:
+        return jsonify({"msg": "insert successfully"})
+    else:
+        return jsonify({"msg": "insert failed"})
 
 @app.route('/update/<id>', methods=['PUT'])
 @jwt_required
@@ -138,7 +149,11 @@ def update(id):
     data = request.json.get("account")
     acctbl = mydb.accounts
     result = acctbl.update({"account_number": int(id)}, {"$set": tojsonAccount(data)})
-    return jsonify({"msg": "update successfully"})
+    if result:
+        return jsonify({"msg": "update successfully"})
+    else:
+        return jsonify({"msg": "update failed"})
+    
 
 @app.route("/delete/<id>", methods=["DELETE"])
 @jwt_required
@@ -146,7 +161,10 @@ def update(id):
 def delete(id):
         acctbl = mydb.accounts
         result = acctbl.remove({"account_number": int(id)})
-        return jsonify({"msg": "delete successfully"}), 200
+        if result:
+            return jsonify({"msg": "delete successfully"})
+        else:
+            return jsonify({"msg": "delete failed"})
 
 @app.route("/detail/<id>", methods=["GET"])
 @jwt_required
