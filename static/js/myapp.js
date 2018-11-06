@@ -34,6 +34,7 @@ myApp.controller("loginController",
             token = response.data.access_token;
             sessionStorage.setItem('access_token', token);
             sessionStorage.setItem('isAdmin', response.data.isAdmin);
+            isAdmin = response.data.isAdmin;
             $window.location.href = '#!bankacc';
         })
         .catch(function myError(response) {
