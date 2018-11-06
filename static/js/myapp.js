@@ -1,5 +1,5 @@
 var myApp = angular.module("myApp", ["datatables", "ngRoute",'toaster']);
-var isAdmin;
+var isAdmin = true;
 
 myApp.config(function ($routeProvider) {
     $routeProvider
@@ -33,8 +33,7 @@ myApp.controller("loginController",
         .then(function mySuccess(response) {
             token = response.data.access_token;
             sessionStorage.setItem('access_token', token);
-            isAdmin = response.data.isAdmin;
-            console.log(isAdmin);
+            sessionStorage.setItem('isAdmin', response.data.isAdmin);
             $window.location.href = '#!bankacc';
         })
         .catch(function myError(response) {
@@ -47,6 +46,11 @@ myApp.controller("loginController",
   myApp.controller("accountController",
     function ($scope, $http, $window, $compile, DTOptionsBuilder, DTColumnBuilder, toaster) {
       var token = sessionStorage.getItem("access_token");
+      if (sessionStorage.getItem("isAdmin") == "true") {
+        isAdmin = true;
+      } else {
+        isAdmin = false;
+      }
       var t = token != null ? "Bearer " + sessionStorage.getItem("access_token") : "";
         $scope.showAdd = true;
         $scope.alertError = true;
@@ -126,6 +130,7 @@ myApp.controller("loginController",
                 if (xhr.status == 401) {
                     alert("Session expireed!")
                     sessionStorage.removeItem("access_token");
+                    sessionStorage.removeItem("isAdmin");
                     $window.location.href = '#/login';
                 }
             },
@@ -231,6 +236,7 @@ myApp.controller("loginController",
             if (error.status == 401) {
                 alert("Session expired!")
                 sessionStorage.removeItem("access_token");
+                sessionStorage.removeItem("isAdmin");
                 $window.location.href = '#/login';
             } else if (error.status == 400) {
                 $('#modal-create').modal('hide');
@@ -263,6 +269,7 @@ myApp.controller("loginController",
             if (error.status == 401) {
                 alert("Session expired!")
                 sessionStorage.removeItem("access_token");
+                sessionStorage.removeItem("isAdmin");
                 $window.location.href = '#/login';
             } else if (error.status == 400) {
                 toaster.pop('error', "500", "Get detail account error!");
@@ -293,6 +300,7 @@ myApp.controller("loginController",
                         if (error.status == 401) {
                             alert("Session expired!")
                             sessionStorage.removeItem("access_token");
+                            sessionStorage.removeItem("isAdmin");
                             $window.location.href = '#/login';
                         } else if (error.status == 400) {
                             toaster.pop('success', "500", "Add new account error!");
@@ -318,6 +326,7 @@ myApp.controller("loginController",
                         if (error.status == 401) {
                             alert("Session expired!")
                             sessionStorage.removeItem("access_token");
+                            sessionStorage.removeItem("isAdmin");
                             $window.location.href = '#/login';
                         } else if (error.status == 400) {
                             toaster.pop('success', "500", "Update account error!");
@@ -331,6 +340,7 @@ myApp.controller("loginController",
         }
         $scope.logOut = function(){
             sessionStorage.removeItem("access_token");
+            sessionStorage.removeItem("isAdmin");
             $window.location.href = '#/login';
         }
 
