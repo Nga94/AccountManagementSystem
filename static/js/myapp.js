@@ -1,5 +1,5 @@
 var myApp = angular.module("myApp", ["datatables", "ngRoute",'toaster']);
-var isAdmin = false;
+var isAdmin;
 
 myApp.config(function ($routeProvider) {
     $routeProvider

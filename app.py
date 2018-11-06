@@ -87,9 +87,13 @@ def checklogin():
     user_curren = userTbl.find_one({"username": username, "password": password})
 
     # check data return is empty
+    import pdb
+    #pdb.set_trace()
     if user_curren:
         if user_curren["role"] == "0":
             isAdmin = False
+        else:
+            isAdmin = True
         access_token = create_access_token(identity=username)
         return jsonify({"isAdmin": isAdmin,"access_token": access_token}), 200  
     else:
