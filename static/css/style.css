@@ -1,3 +1,9 @@
+:root {
+    --main-bg-color: #f5f5f5;
+    --main-color: #428bca;
+    --border-table: #ccc;
+  }
+
 input.ng-dirty.ng-invalid{
     border-color: red;
 }
@@ -19,7 +25,7 @@ table th {
     width: 100%;
     text-align: center;
     margin-bottom: 10px;
-    background-color: #428bca;
+    background-color: var(--main-color);
     font-size: 30px;
     color: white;
 }
@@ -28,7 +34,7 @@ table th {
     height: 50px;
     width: 100%;
     text-align: right;
-    background-color: #428bca;
+    background-color: var(--main-color);
     font-size: 14px;
     padding-top: 30px;
     padding-right: 10px;
@@ -41,6 +47,116 @@ table th {
 }
 
 .modal-header {
-    background-color: #428bca;
+    background-color: var(--main-color);
 }
 
+.table-custom{
+    border: none;
+}
+.table-custom thead tr th{
+    vertical-align: middle;
+    text-transform: uppercase;
+    color: #333;
+    font-weight: 600;
+    font-size: 12px;
+    border-bottom: 1px solid var(--border-table) !important;
+}
+.table-custom tbody tr td{
+    border-bottom: 1px solid var(--border-table) !important;
+}
+
+.wrap{
+    width: 100%;
+    padding-right: 15px;
+    padding-left: 15px;
+}
+
+.dataTables_wrapper .dataTables_paginate .paginate_button.current, .dataTables_wrapper .dataTables_paginate .paginate_button.current:hover {
+    background: var(--main-color) !important;
+    border: none !important;
+    color: white !important;
+}
+.paginate_button:hover{
+    padding: 0.5em 1em !important;
+}
+.dataTables_wrapper .dataTables_paginate .paginate_button:hover{
+    background:  var(--main-color) !important;
+    border: none !important;
+}
+.modal-title{
+    color: #fff
+}
+
+.divider{
+    border-bottom: 1px solid #ccc;
+    margin: 25px 0 20px 0;
+    position: relative;
+}
+
+.divider .title-divider{
+    position: absolute;
+    top: -20px;
+    left: 15px;
+    background: #fff;
+    padding: 10px;
+}
+
+div.dataTables_wrapper div.dataTables_filter{
+    width: 50%;
+    margin-right: 0 !important;
+}
+div.dataTables_wrapper div.dataTables_filter label{
+    width: 100%;
+    text-align: right;
+}
+div.dataTables_wrapper div.dataTables_filter label input{
+    display: inline-block;
+    width: calc(100% - 65px);
+    height: 34px;
+    padding: 6px 12px;
+    font-size: 14px;
+    line-height: 1.428571429;
+    color: #555;
+    vertical-align: middle;
+    background-color: #fff;
+    border: 1px solid var(--border-table);
+    border-radius: 4px;
+    -webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,0.075);
+    box-shadow: inset 0 1px 1px rgba(0,0,0,0.075);
+    -webkit-transition: border-color ease-in-out .15s,box-shadow ease-in-out .15s;
+    transition: border-color ease-in-out .15s,box-shadow ease-in-out .15s;
+}
+.dataTables_wrapper .dataTables_length{
+    margin-left: 0 !important;
+}
+table.dataTable.no-footer{
+    border-bottom: none !important 
+}
+
+.header{
+    position: sticky;
+    top: 0;
+    left: 0;
+    z-index: 1000;
+}
+
+.user-icon{
+    position: absolute;
+    top: 15px;
+    right: 20px;
+    color: white
+}
+
+.user-icon .username{
+    font-weight: 600;
+    margin-right: 10px
+}
+
+.user-icon .logout{
+    cursor: pointer;
+    text-decoration: underline
+}
+
+.header-inner{
+    position: relative;
+}

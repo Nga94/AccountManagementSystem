@@ -9,11 +9,12 @@
     <link rel="stylesheet" href="/static/css/dataTables.bootstrap.min.css">
     <link rel="stylesheet" href="/static/css/jquery.dataTables.min.css">
     <link rel="stylesheet" href="/static/css/style.css"/>
+    <link rel="stylesheet" href="/static/css/toast.css"/>
     
 </head>
 <body ng-app="myApp">
-        
-    <div class="container">
+    <toaster-container toaster-options="{'time-out': 5000}"></toaster-container>
+    <div class="wrap">
         <div ng-view>
 
         </div>
@@ -25,5 +26,6 @@
     <script src="/static/lib/jquery.dataTables.min.js"></script>
 	<script src="/static/js/myapp.js"></script>
     <script src="/static/lib/angular-datatables.min.js"></script>
+    <script src="/static/lib/toastr.js"></script>
 </body>
 </html>

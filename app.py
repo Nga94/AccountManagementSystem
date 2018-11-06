@@ -10,8 +10,15 @@ app = Flask(__name__)
 
 # Setup the Flask-JWT-Extended extension
 app.config['JWT_SECRET_KEY'] = 'super-secret'  # Change this!
+app.config['JWT_BLACKLIST_ENABLED'] = True
+app.config['JWT_BLACKLIST_TOKEN_CHECKS'] = ['access', 'refresh']
 jwt = JWTManager(app)
+blacklist = set()
 
+@jwt.token_in_blacklist_loader
+def check_if_token_in_blacklist(decrypted_token):
+    jti = decrypted_token['jti']
+    return jti in blacklist
 
 @app.route("/")
 def index():
@@ -45,13 +52,12 @@ def tojsonAccount(account):
 def checkadmin(f):
     @wraps(f)
     def wrapper(*args, **kwargs):
-        userTbl = mydb.user
+        userTbl = mydb.users
         cur_user = get_jwt_identity()
-        usercur = userTbl.find({"username": cur_user})
-        if usercur.count() > 0:
-            for u in usercur:
-                if u["role"] == 0:
-                    return jsonify({"msg": "just admin can perform this action"}), 400
+        usercur = userTbl.find_one({"username": cur_user})
+        if usercur:
+            if u["role"] == 0:
+                return jsonify({"msg": "just admin can perform this action"}), 400
         return f(*args, **kwargs)
 
     return wrapper
@@ -90,17 +96,16 @@ def getall():
     size = param.get("size")
     acctbl = mydb.accounts
     totalrecord = acctbl.find().count()
-    columns = ["account_number", "firstname", "lastname", "gender", "age", "email", "address", "city", "state",
-               "employer", "balance"]
+    columns = ["account_number", "firstname", "lastname", "gender", "age", 
+    "email", "address", "city", "state", "employer", "balance"]
     _filter = {}
     if param.get("search") != "":
         # the term put into search is logically concatenated with 'or' between all columns
         or_filter_on_all_columns = []
 
-        for i in range(len(columns)):
+        for col in columns:
             column_filter = {}
-            # case insensitive partial string matching pulled from user input
-            column_filter[columns[i]] = {'$regex': param.get("search"), '$options': 'i'}
+            column_filter[col] = {'$regex': param.get("search"), '$options': 'i'}
             or_filter_on_all_columns.append(column_filter)
 
         _filter['$or'] = or_filter_on_all_columns
@@ -124,10 +129,7 @@ def insert():
     data = request.json.get("account")
     acctbl = mydb.accounts
     result = acctbl.insert(tojsonAccount(data))
-    if result:
-        return jsonify({"msg": "insert successfully"})
-    else:
-        return jsonify({"msg": "insert failed"})
+    return jsonify({"msg": "insert successfully"})
 
 @app.route('/update/<id>', methods=['PUT'])
 @jwt_required
@@ -135,22 +137,16 @@ def insert():
 def update(id):
     data = request.json.get("account")
     acctbl = mydb.accounts
-    result = acctbl.update_one({"account_number": int(id)}, {"$set": tojsonAccount(data)})
-    if result.matched_count == 1:
-        return jsonify({"msg": "update successfully"})
-    else:
-        return jsonify({"msg": "update failed"})
+    result = acctbl.update({"account_number": int(id)}, {"$set": tojsonAccount(data)})
+    return jsonify({"msg": "update successfully"})
 
 @app.route("/delete/<id>", methods=["DELETE"])
 @jwt_required
 @checkadmin
 def delete(id):
         acctbl = mydb.accounts
-        result = acctbl.delete_one({"account_number": int(id)})
-        if result.deleted_count == 1:
-            return jsonify({"msg": "delete successfully"}), 200
-        else:
-            return jsonify({"msg": "delete failed"}), 400
+        result = acctbl.remove({"account_number": int(id)})
+        return jsonify({"msg": "delete successfully"}), 200
 
 @app.route("/detail/<id>", methods=["GET"])
 @jwt_required
@@ -167,6 +163,21 @@ def detail(id):
         "msg": "get data successed"
     }), 200
 
+@app.route("/user", methods=["GET"])
+@jwt_required
+def get_user():
+    userTbl = mydb.users
+    cur_user = get_jwt_identity()
+    usercur = userTbl.find_one({"username": cur_user})
+    return jsonify({"user": {"username": usercur["username"], "role": usercur["role"]}})
+
+    # Endpoint for revoking the current users refresh token
+@app.route('/logout', methods=['FET'])
+@jwt_required
+def logout():
+    jti = get_raw_jwt()['jti']
+    blacklist.add(jti)
+    return jsonify({"msg": "Successfully logged out"}), 200
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run('0.0.0.0', debug=True)

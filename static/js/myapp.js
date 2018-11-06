@@ -1,4 +1,4 @@
-var myApp = angular.module("myApp", ["datatables", "ngRoute"]);
+var myApp = angular.module("myApp", ["datatables", "ngRoute",'toaster']);
 
 myApp.config(function ($routeProvider) {
     $routeProvider
@@ -24,8 +24,9 @@ myApp.controller("loginController",
         $http({
             method : "POST",
             url : "/checklogin",
-            data: {'username': $scope.user.username,
-                   'password': $scope.user.password,
+            data: {
+                'username': $scope.user.username,
+                'password': $scope.user.password,
             }
         })
         .then(function mySuccess(response) {
@@ -41,7 +42,7 @@ myApp.controller("loginController",
   })
 
   myApp.controller("accountController",
-    function ($scope, $http, $window, $compile, DTOptionsBuilder, DTColumnBuilder) {
+    function ($scope, $http, $window, $compile, DTOptionsBuilder, DTColumnBuilder, toaster) {
       var token = sessionStorage.getItem("access_token");
       var t = token != null ? "Bearer " + sessionStorage.getItem("access_token") : "";
         $scope.showAdd = true;
@@ -51,6 +52,8 @@ myApp.controller("loginController",
         $scope.account = {};
         $scope.query = {};
         $scope.rs = {};
+
+        $scope.userLogin = {};
         // Store datatable instance
         $scope.dtInstance = {};
         $scope.reloadData = reloadData;
@@ -63,6 +66,22 @@ myApp.controller("loginController",
         function callback(json) {
             console.log(json);
         }
+
+        $scope.getUser = function(){
+            $http({
+                method: 'GET',
+                url: '/user',
+                headers: {
+                    "Authorization": t
+                }
+            }).then(function (response) {
+                $scope.userLogin = response.data.user;
+            }, function (error) {
+                
+            });
+        }
+        $scope.getUser();
+
         var defaultLanguage = {
             "sEmptyTable": "No data available in table",
             "sInfo": "Showing _START_ to _END_ of _TOTAL_ records",
@@ -116,6 +135,7 @@ myApp.controller("loginController",
             }
         })
         .withDataProp(function (response) {
+
             rs = response.data;
             return rs;
         })
@@ -134,12 +154,7 @@ myApp.controller("loginController",
     }
 
     var indexRender = function indexRender(data, type, full, meta) {
-        var index = meta.settings._iDisplayStart + meta.row;
-        if (meta.settings.aaSorting[0][1] === 'desc') {
-            return meta.settings._iRecordsTotal - index;
-        } else {
-            return index + 1;
-        }
+        return meta.row + 1;
     };
     var nameRender = function (data, type, row) {
         return row.firstname + ' ' + row.lastname;
@@ -201,9 +216,7 @@ myApp.controller("loginController",
                 "Authorization": t
             }
         }).then(function (response) {
-            $scope.msg = response.data.msg;
-            $scope.alertError = false;
-            $scope.hasAlert = true;
+            toaster.pop('success', "200", "Delete account success!");
             $('#modal-delete').modal('hide');
             $scope.reloadData();
         }, function (error) {
@@ -212,10 +225,8 @@ myApp.controller("loginController",
                 sessionStorage.removeItem("access_token");
                 $window.location.href = '#/login';
             } else if (error.status == 400) {
-                $scope.msg = "An error occur : " + error.data.msg;
-                $scope.hasAlert = true;
-                $scope.alertError = true;
                 $('#modal-create').modal('hide');
+                toaster.pop('error', "500", "Delete not success");
             }
         });
     }
@@ -246,9 +257,7 @@ myApp.controller("loginController",
                 sessionStorage.removeItem("access_token");
                 $window.location.href = '#/login';
             } else if (error.status == 400) {
-                $scope.msg = "An error occur : " + error.data.msg;
-                $scope.hasAlert = true;
-                $scope.alertType = true;
+                toaster.pop('error', "500", "Get detail account error!");
                 $('#modal-create').modal('hide');
             }
         });
@@ -269,9 +278,7 @@ myApp.controller("loginController",
                             "Authorization": "Bearer " + sessionStorage.getItem("access_token")
                         }
                     }).then(function (response) {
-                        $scope.msg = response.data.msg;
-                        $scope.alertError = false;
-                        $scope.hasAlert = true;
+                        toaster.pop('success', "200", "Add new account success!");
                         $('#modal-create').modal('hide');
                         $scope.reloadData();
                     }, function (error) {
@@ -280,9 +287,7 @@ myApp.controller("loginController",
                             sessionStorage.removeItem("access_token");
                             $window.location.href = '#/login';
                         } else if (error.status == 400) {
-                            $scope.msg = "An error occur : " + error.data.msg;
-                            $scope.hasAlert = true;
-                            $scope.alertError = true;
+                            toaster.pop('success', "500", "Add new account error!");
                             $('#modal-create').modal('hide');
                         }
                     })
@@ -296,9 +301,7 @@ myApp.controller("loginController",
                             "Authorization": t
                         }
                     }).then(function (response) {
-                        $scope.msg = response.data.msg;
-                        $scope.alertError = false;
-                        $scope.hasAlert = true;
+                        toaster.pop('success', "200", "Update account success!");
                         $('#modal-create').modal('hide');
                         $scope.reloadData();
                     }, function (error) {
@@ -307,9 +310,7 @@ myApp.controller("loginController",
                             sessionStorage.removeItem("access_token");
                             $window.location.href = '#/login';
                         } else if (error.status == 400) {
-                            $scope.msg = "An error occur : " + error.data.msg;
-                            $scope.hasAlert = true;
-                            $scope.alertError = true;
+                            toaster.pop('success', "500", "Update account error!");
                             $('#modal-create').modal('hide');
                         }
                     })
@@ -318,5 +319,22 @@ myApp.controller("loginController",
                 alert("Invalid")
             }
         }
+        $scope.logOut = function(){
+            sessionStorage.removeItem("access_token");
+            $window.location.href = '#/login';
+        }
 
+        function logOut(){
+            $http({
+                method: 'GET',
+                url: '/logout',
+                headers: {
+                    "Authorization": t
+                }
+            }).then(function (response) {
+                $scope.userLogin = response.data.user;
+            }, function (error) {
+                
+            });
+        }
   })
