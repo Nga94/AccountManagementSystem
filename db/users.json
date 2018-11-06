@@ -1,12 +1,12 @@
 { 
-    "_id" : ObjectId("5bddb5c16345aa06a4ce516b"), 
-    "username" : "admin", 
-    "password" : "123456", 
-    "role" : NumberInt(1)
+    "_id" : ObjectId("5bda8498b741490e7c148371"), 
+    "username" : "ngant", 
+    "password" : "MTIzNDU2", 
+    "role" : "0"
 }
 { 
-    "_id" : ObjectId("5bddb5c16345aa06a4ce516c"), 
-    "username" : "ngant", 
-    "password" : "123456", 
-    "role" : NumberInt(0)
+    "_id" : ObjectId("5be0e9a3b741492d54cd04fd"), 
+    "username" : "admin", 
+    "password" : "YWRtaW4xMjM=", 
+    "role" : "1"
 }
